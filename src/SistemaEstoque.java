@@ -5,7 +5,7 @@ public class SistemaEstoque {
         public static void main(String[] args) {
             Movimentar estoque = new Movimentar();
 
-            //Cadastrar insumo
+            //Cadastrar insumoo
             Insumo malte = new Insumo("001", "Malte de Cevada","A1");
             Insumo lupulo = new Insumo("002", "Lúpulo Amargo", "A2");
 
