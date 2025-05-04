@@ -1,69 +1,79 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body{
+body {
     font-family: serif;
     background-color: rgb(255, 255, 255);
 }
 
-img{
+img {
     width: 60px;
     height: 60px;
+    max-width: 100%; 
+    height: auto;
 }
 
-
-
-/*header*/
-header{
+/* header */
+header {
     background-color: rgb(86, 85, 85);
     position: sticky;
     padding: 10px;
     width: 100%;
     top: 0;
     left: 0;
+    z-index: 100; 
 }
-.container{
+
+.container {
     width: 80%;
+    max-width: 1200px; 
     margin: auto;
 }
-.container1{
+
+.container1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap; 
 }
 
-ul{
+ul {
     display: flex;
-    gap: 30px;
+    gap: 20px; 
     text-transform: uppercase;
+    flex-wrap: wrap; 
+    justify-content: center; 
 }
-li{
+
+li {
     list-style-type: none;
     padding: 8px 15px;
-    font-size: 20px;
+    font-size: 18px; 
 }
-.link{
+
+.link {
     text-decoration: none;
     color: black;
     padding: 8px 20px;
 }
-.link:hover{
+
+.link:hover {
     background-color: rgb(187, 140, 0);
     color: white;
     border-radius: 8px;
 }
-
  
 /*texto intro*/
 .content{
-    font-size: 30px;
-    width: 60ch;
+    font-size: 30px; 
+    width: 90%; 
+    max-width: 60ch; 
     margin: auto;
     text-align: center;
-    margin-top: 70px;
+    margin-top: 50px; 
     text-align: justify;
 }
 .Sobre{
@@ -74,18 +84,20 @@ li{
 
 
 /*fundo*/
-.img{
+.img {
     background-image: url(choppe.jpg);
     background-size: cover;
     background-repeat: repeat;
 }
-.fundo{
-    padding: 35px 0;
-    font-size: 30px;
-    width: 60ch;
+
+.fundo {
+    padding: 20px 0; 
+    font-size: 28px; 
+    width: 90%; 
+    max-width: 60ch; 
     margin: auto;
     text-align: center;
-    margin-top: 50px;
+    margin-top: 30px; 
     text-align: justify;
 }
 
@@ -115,7 +127,8 @@ i{
 .produtos{
     border: 2px solid black;
     padding: 20px;
-    width: 60%;
+    width: 100%;
+    max-width: 1000px;
     margin: auto;
     margin-top: 110px;
     scroll-margin-top: 110px;
@@ -124,6 +137,7 @@ i{
     display: flex;
     justify-content: space-between;
     margin-bottom: 60px;
+    flex-wrap: wrap;
 }
 .img_chopp{
     width: 400px;
@@ -173,7 +187,6 @@ i{
     background-color: rgb(187, 140, 0);
     color: white;
 }
-
 
 
 .curiosidade{
@@ -227,7 +240,7 @@ iframe{
     border: 2px solid black;
     text-align: center;
     min-height: 340px;
-    overflow: hidden; /* Garante que o conteúdo não ultrapasse o card */
+    overflow: hidden; 
     position: relative;
 
     background-image: url(/imagens_membros/barril\ fundo.jpg);
