@@ -243,7 +243,7 @@ iframe{
     overflow: hidden; 
     position: relative;
 
-    background-image: url(./choppe.jpg);
+    background-image: url(choppe.jpg);
     background-repeat: no-repeat;
     background-size: 100%;
 }
