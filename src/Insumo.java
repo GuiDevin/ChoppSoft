@@ -1,25 +1,54 @@
-public class Insumo {
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-
-    private String codigo;
+class Insumo {
+    private int codigo;
     private String descricao;
-    private String deposito;
+    public static HashMap<Integer, Double> quantidadesInsumos = new HashMap<>();
+    public static List<Insumo> insumos = new ArrayList<>();
 
-    public Insumo(String codigo, String descricao, String deposito) {
-        this.codigo = codigo;
-        this.descricao = descricao;
-        this.deposito = deposito;
+    public void InsumoCadastro(int codigoInsumo, String descricaoInsumo) {
+
+            this.codigo = codigoInsumo;
+            this.descricao = descricaoInsumo;
+            insumos.add(this);
+            JOptionPane.showMessageDialog(null, "Insumo cadastrado com sucesso!");
 
     }
 
-    public String getCodigo() {
+    public int getCodigoInsumo() {
         return codigo;
     }
 
-    public String getDescricao() {
+    public String getDescricaoInsumo() {
         return descricao;
     }
-    public String getDeposito(){
-        return deposito;
+
+    public static Insumo buscarInsumo(int codigoInsumo) {
+        for (Insumo insum : insumos) {
+            if (insum.getCodigoInsumo() == codigoInsumo) {
+                return insum;
+            }
+        }
+        JOptionPane.showMessageDialog(null, "Depósito com código " + codigoInsumo + " não encontrado.");
+        return null;
+    }
+    public static Insumo verificarInsumoExistente(int codigoInsumo) {
+        for (Insumo insum : insumos) {
+            if (insum.getCodigoInsumo() == codigoInsumo) {
+                return insum;
+            }
+        }
+        return null;
+    }
+
+    public static double quantidadeTotalInsumos() {
+        double total = 0;
+        for (Double quantidade : quantidadesInsumos.values()) {
+            total += quantidade;
+        }
+        return total;
     }
 }
