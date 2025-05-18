@@ -45,4 +45,15 @@ class Deposito {
         return null;
     }
 
+    public static void excluirDeposito(int codigoDeposito) {
+        Deposito deposito = verificarDepositoExistente(codigoDeposito);
+        if (deposito != null) {
+            depositos.remove(deposito);
+            quantidadesDepositos.remove(codigoDeposito);
+            JOptionPane.showMessageDialog(null, "Depósito com código " + codigoDeposito + " excluído com sucesso.");
+        } else {
+            JOptionPane.showMessageDialog(null, "Depósito com código " + codigoDeposito + " não encontrado.");
+        }
+    }
+
 }

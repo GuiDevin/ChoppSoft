@@ -12,6 +12,8 @@ public class SistemaEstoque {
                     "Movimentar Insumo",
                     "Buscar Insumo",
                     "Buscar Depósito",
+                    "Excluir Insumo",
+                    "Excluir Depósito",
                     "Ver Histórico de Movimentação",
                     "Ver Total de Matéria Prima",
                     "Sair"
@@ -22,23 +24,23 @@ public class SistemaEstoque {
             switch (escolha) {
                 case "Cadastrar Insumo":
                     Insumo insumo = new Insumo();
-                    int codigoInsumo = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do insumo:"));
-                    if (insumo.verificarInsumoExistente(codigoInsumo) == null) {
+                    int codigoInsumoCadastro = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do insumo:"));
+                    if (insumo.verificarInsumoExistente(codigoInsumoCadastro) == null) {
                         String descricaoInsumo = JOptionPane.showInputDialog("Informe a descrição do insumo:");
-                        insumo.InsumoCadastro(codigoInsumo, descricaoInsumo);
-                    }else {
-                        JOptionPane.showMessageDialog(null, "Insumo com código " + codigoInsumo + " já existe.");
+                        insumo.InsumoCadastro(codigoInsumoCadastro, descricaoInsumo);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Insumo com código " + codigoInsumoCadastro + " já existe.");
                     }
                     break;
 
                 case "Cadastrar Depósito":
                     Deposito deposito = new Deposito();
-                    int codigoDeposito = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do depósito:"));
-                    if (deposito.verificarDepositoExistente(codigoDeposito) == null) {
+                    int codigoDepositoCadastro = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do depósito:"));
+                    if (deposito.verificarDepositoExistente(codigoDepositoCadastro) == null) {
                         String descricaoDeposito = JOptionPane.showInputDialog("Informe a descrição do depósito:");
-                        deposito.DepositoCadastro(codigoDeposito, descricaoDeposito);
-                    }else {
-                        JOptionPane.showMessageDialog(null, "Depósito com código " + codigoDeposito + " já existe.");
+                        deposito.DepositoCadastro(codigoDepositoCadastro, descricaoDeposito);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Depósito com código " + codigoDepositoCadastro + " já existe.");
                     }
                     break;
 
@@ -51,7 +53,7 @@ public class SistemaEstoque {
                     break;
 
                 case "Buscar Insumo":
-                    codigoInsumo = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do insumo:"));
+                    int codigoInsumo = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do insumo:"));
                     Insumo insumoBuscado = Insumo.buscarInsumo(codigoInsumo);
                     if (insumoBuscado != null) {
                         JOptionPane.showMessageDialog(null, "Insumo encontrado: " + insumoBuscado.getDescricaoInsumo() + "\nQuantidade: " + Insumo.quantidadesInsumos.get(codigoInsumo));
@@ -64,6 +66,16 @@ public class SistemaEstoque {
                     if (depositoBuscado != null) {
                         JOptionPane.showMessageDialog(null, "Depósito encontrado: " + depositoBuscado.getDeposito() + " " + depositoBuscado.getDescricaoDeposito() + "\nQuantidade: " + Deposito.quantidadesDepositos.get(codigoBuscaDeposito));
                     }
+                    break;
+
+                case "Excluir Insumo":
+                    int codigoInsumoExcluir = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do insumo a ser excluído:"));
+                    Insumo.excluirInsumo(codigoInsumoExcluir);
+                    break;
+
+                case "Excluir Depósito":
+                    int codigoDepositoExcluir = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do depósito a ser excluído:"));
+                    Deposito.excluirDeposito(codigoDepositoExcluir);
                     break;
 
                 case "Ver Histórico de Movimentação":
@@ -86,6 +98,7 @@ public class SistemaEstoque {
 
                     JOptionPane.showMessageDialog(null, historico.toString());
                     break;
+
                 case "Ver Total de Matéria Prima":
                     double total = Insumo.quantidadeTotalInsumos();
                     JOptionPane.showMessageDialog(null, "Total de matéria prima no estoque: " + total);

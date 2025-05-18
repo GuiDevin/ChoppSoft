@@ -51,4 +51,15 @@ class Insumo {
         }
         return total;
     }
+
+    public static void excluirInsumo(int codigoInsumo) {
+        Insumo insumo = verificarInsumoExistente(codigoInsumo);
+        if (insumo != null) {
+            insumos.remove(insumo);
+            quantidadesInsumos.remove(codigoInsumo);
+            JOptionPane.showMessageDialog(null, "Insumo com código " + codigoInsumo + " e descrição '" + insumo.descricao + "' excluído com sucesso.");
+        } else {
+            JOptionPane.showMessageDialog(null, "Insumo com código " + codigoInsumo + " não encontrado.");
+        }
+    }
 }
