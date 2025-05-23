@@ -182,10 +182,13 @@ i{
   border-radius: 8px;
   padding: 8px 20px;
   background-color: #ccc;
+  transition: 0.5s ease-in;
+  transform: translateY();
 }
 .construa:hover{
     background-color: rgb(187, 140, 0);
     color: white;
+     transform: translateY(-25%);
 }
 
 

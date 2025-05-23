@@ -6,7 +6,7 @@
 
 body{
     font-family: serif;
-    background-color: rgb(255, 255, 255);
+    background-color: rgb(224, 223, 223);
 }
 
 img{
@@ -45,4 +45,15 @@ header{
     background-color: rgb(202, 141, 29);
     color: white;
     transform: translateY(-25%);
+}
+
+
+.caixa{
+    width: 85%;
+    justify-content: center;
+    margin: auto;
+}
+hr{
+    margin-top: 35px;
+    border: 1px solid black;
 }
