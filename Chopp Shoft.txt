@@ -1,0 +1,1537 @@
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+// Classe que representa um depósito
+class Deposito {
+    private int deposito; // Código do depósito
+    private String descricao; // Descrição do depósito
+    public static HashMap<Integer, Double> quantidadesMateriaPrima = new HashMap<>(); // Armazena quantidades de matéria-prima nos depósitos
+    public static HashMap<Integer, Double> depositosElaborados = new HashMap<>(); // Armazena quantidades de produtos elaborados
+    public static HashMap<Integer, Double> depositosAcabado = new HashMap<>(); // Armazena quantidades de produtos acabados
+    public static List<Deposito> depositos = new ArrayList<>(); // Lista para armazenar depósitos cadastrados
+
+    // Método para cadastrar um novo depósito
+    public void DepositoCadastro(int codigoDeposito, String descricaoDeposito) {
+        this.deposito = codigoDeposito; // Define o código do depósito
+        this.descricao = descricaoDeposito; // Define a descrição do depósito
+        depositos.add(this); // Adiciona o depósito à lista de depósitos
+        JOptionPane.showMessageDialog(null, "Depósito cadastrado com sucesso!"); // Mensagem de sucesso
+    }
+
+    // Método para obter a descrição do depósito
+    public String getDescricaoDeposito() {
+        return descricao; // Retorna a descrição do depósito
+    }
+
+    // Método para obter o código do depósito
+    public int getDeposito() {
+        return deposito; // Retorna o código do depósito
+    }
+
+    // Método para buscar um depósito pelo código
+    public static Deposito buscarDeposito(int codigoDeposito) {
+        for (Deposito dep : depositos) { // Percorre a lista de depósitos
+            if (dep.getDeposito() == codigoDeposito) { // Verifica se o código corresponde
+                return dep; // Retorna o depósito encontrado
+            }
+        }
+        JOptionPane.showMessageDialog(null, "Depósito com código " + codigoDeposito + " não encontrado."); // Mensagem de erro
+        return null; // Retorna null se não encontrado
+    }
+
+    // Método para verificar se um depósito existe pelo código
+    public static Deposito verificarDepositoExistente(int codigoDeposito) {
+        for (Deposito dep : depositos) { // Percorre a lista de depósitos
+            if (dep.getDeposito() == codigoDeposito) { // Verifica se o código corresponde
+                return dep; // Retorna o depósito se encontrado
+            }
+        }
+        return null; // Retorna null se não encontrado
+    }
+
+    // Excluir depósito com tratamento de exceções
+    public static void excluirDeposito(int codigoDeposito) {
+        try {
+            Deposito deposito = verificarDepositoExistente(codigoDeposito); // Verifica se o depósito existe
+            if (deposito != null) { // Se encontrado
+                depositos.remove(deposito); // Remove o depósito da lista
+                depositosAcabado.remove(codigoDeposito); // Remove do HashMap de depósitos acabados
+                quantidadesMateriaPrima.remove(codigoDeposito); // Remove do HashMap de quantidades de matéria-prima
+                depositosElaborados.remove(codigoDeposito); // Remove do HashMap de depósitos elaborados
+                JOptionPane.showMessageDialog(null, "Depósito com código " + codigoDeposito + " excluído com sucesso."); // Mensagem de sucesso
+            } else {
+                JOptionPane.showMessageDialog(null, "Depósito com código " + codigoDeposito + " não encontrado."); // Mensagem de erro
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao excluir depósito: " + e.getMessage()); // Mensagem de erro
+        }
+    }
+
+    // Método para listar depósitos de matéria-prima
+    public static String listarDepositosMateriaPria() {
+        StringBuilder lista = new StringBuilder("Listagem de Depósitos:\n"); // Inicializa a lista
+        for (Deposito dep : depositos) { // Percorre a lista de depósitos
+            lista.append("Código: ").append(dep.getDeposito()) // Adiciona o código do depósito
+                    .append(", Descrição: ").append(dep.getDescricaoDeposito()) // Adiciona a descrição
+                    .append(", Quantidade: ").append(quantidadesMateriaPrima.getOrDefault(dep.getDeposito(), 0.0)) // Adiciona a quantidade
+                    .append("\n"); // Nova linha
+        }
+        return lista.toString(); // Retorna a lista formatada
+    }
+
+    // Método para listar depósitos de produtos elaborados
+    public static String listarDepositosElaborado() {
+        StringBuilder lista = new StringBuilder("Listagem de Depósitos:\n"); // Inicializa a lista
+        for (Deposito dep : depositos) { // Percorre a lista de depósitos
+            lista.append("Código: ").append(dep.getDeposito()) // Adiciona o código do depósito
+                    .append(", Descrição: ").append(dep.getDescricaoDeposito()) // Adiciona a descrição
+                    .append(", Quantidade: ").append(depositosElaborados.getOrDefault(dep.getDeposito(), 0.0)) // Adiciona a quantidade
+                    .append("\n"); // Nova linha
+        }
+        return lista.toString(); // Retorna a lista formatada
+    }
+
+    // Método para listar depósitos de produtos acabados
+    public static String listarDepositosAcabado() {
+        StringBuilder lista = new StringBuilder("Listagem de Depósitos:\n"); // Inicializa a lista
+        for (Deposito dep : depositos) { // Percorre a lista de depósitos
+            lista.append("Código: ").append(dep.getDeposito()) // Adiciona o código do depósito
+                    .append(", Descrição: ").append(dep.getDescricaoDeposito()) // Adiciona a descrição
+                    .append(", Quantidade: ").append(depositosAcabado.getOrDefault(dep.getDeposito(), 0.0)) // Adiciona a quantidade
+                    .append("\n"); // Nova linha
+        }
+        return lista.toString(); // Retorna a lista formatada
+    }
+}
+
+import javax.swing.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+
+// Classe que gerencia o histórico de movimentação de insumos, depósitos, material elaborado e acabado, e etapas produtivas
+class HistoricoMovimentacao {
+    // Listas para armazenar os registros de movimentação
+    private List<RegistroMovimentacao> historicoInsumos;
+    private List<RegistroMovimentacao> historicoDepositos;
+    private List<RegistroMovimentacao> historicoMaterialElaborado;
+    private List<RegistroMovimentacao> historicoMaterialAcabado;
+    private List<RegistroMovimentacao> historicoEtapasProdutivas; // Histórico para etapas produtivas
+
+    // Construtor que inicializa as listas
+    public HistoricoMovimentacao() {
+        historicoInsumos = new ArrayList<>();
+        historicoDepositos = new ArrayList<>();
+        historicoMaterialElaborado = new ArrayList<>();
+        historicoMaterialAcabado = new ArrayList<>();
+        historicoEtapasProdutivas = new ArrayList<>(); // Inicialização do novo histórico
+    }
+
+    // Método para registrar movimentação de insumos
+    public void registrarMovimentacaoInsumo(int codigoInsumo, double quantidade, String tipo) {
+        try {
+            // Cria um novo registro de movimentação e adiciona ao histórico
+            RegistroMovimentacao movimentacao = new RegistroMovimentacao(codigoInsumo, quantidade, tipo);
+            historicoInsumos.add(movimentacao);
+        } catch (Exception e) {
+            // Exibe mensagem de erro, se houver um problema ao registrar
+            JOptionPane.showMessageDialog(null, "Erro ao registrar movimentação de insumo: " + e.getMessage());
+        }
+    }
+
+    // Método para registrar movimentação de depósitos
+    public void registrarMovimentacaoDeposito(int codigoDeposito, double quantidade, String tipo) {
+        try {
+            // Cria um novo registro de movimentação e adiciona ao histórico
+            RegistroMovimentacao movimentacao = new RegistroMovimentacao(codigoDeposito, quantidade, tipo);
+            historicoDepositos.add(movimentacao);
+        } catch (Exception e) {
+            // Exibe mensagem de erro, se houver um problema ao registrar
+            JOptionPane.showMessageDialog(null, "Erro ao registrar movimentação de depósito: " + e.getMessage());
+        }
+    }
+
+    // Método para registrar movimentação de material elaborado
+    public void registrarMovimentacaoMaterialElaborado(int codigoMaterial, double quantidade, String tipo) {
+        try {
+            // Cria um novo registro de movimentação e adiciona ao histórico
+            RegistroMovimentacao movimentacao = new RegistroMovimentacao(codigoMaterial, quantidade, tipo);
+            historicoMaterialElaborado.add(movimentacao);
+        } catch (Exception e) {
+            // Exibe mensagem de erro, se houver um problema ao registrar
+            JOptionPane.showMessageDialog(null, "Erro ao registrar movimentação de material elaborado: " + e.getMessage());
+        }
+    }
+
+    // Método para registrar movimentação de material acabado
+    public void registrarMovimentacaoMaterialAcabado(int codigoMaterial, double quantidade, String tipo) {
+        try {
+            // Cria um novo registro de movimentação e adiciona ao histórico
+            RegistroMovimentacao movimentacao = new RegistroMovimentacao(codigoMaterial, quantidade, tipo);
+            historicoMaterialAcabado.add(movimentacao);
+        } catch (Exception e) {
+            // Exibe mensagem de erro, se houver um problema ao registrar
+            JOptionPane.showMessageDialog(null, "Erro ao registrar movimentação de material acabado: " + e.getMessage());
+        }
+    }
+
+    // Método para registrar movimentação de etapas produtivas
+    public void registrarMovimentacaoEtapaProdutiva(int codigoEtapa, double quantidade, String tipo) {
+        try {
+            // Cria um novo registro de movimentação e adiciona ao histórico
+            RegistroMovimentacao movimentacao = new RegistroMovimentacao(codigoEtapa, quantidade, tipo);
+            historicoEtapasProdutivas.add(movimentacao);
+        } catch (Exception e) {
+            // Exibe mensagem de erro, se houver um problema ao registrar
+            JOptionPane.showMessageDialog(null, "Erro ao registrar movimentação de etapa produtiva: " + e.getMessage());
+        }
+    }
+
+    // Getters para acessar os históricos
+    public List<RegistroMovimentacao> getHistoricoInsumos() {
+        return historicoInsumos;
+    }
+
+    public List<RegistroMovimentacao> getHistoricoDepositos() {
+        return historicoDepositos;
+    }
+
+    public List<RegistroMovimentacao> getHistoricoMaterialElaborado() {
+        return historicoMaterialElaborado;
+    }
+
+    public List<RegistroMovimentacao> getHistoricoMaterialAcabado() {
+        return historicoMaterialAcabado;
+    }
+
+    public List<RegistroMovimentacao> getHistoricoEtapasProdutivas() { // Novo getter
+        return historicoEtapasProdutivas;
+    }
+
+    // Classe interna para representar um registro de movimentação
+    class RegistroMovimentacao {
+        private LocalDateTime dataHora; // Data e hora da movimentação
+        private double quantidade; // Quantidade movimentada
+        private int codigo; // Código do item movimentado
+        private String tipo; // Tipo de movimentação (Entrada/Saída)
+
+        // Construtor para inicializar um registro de movimentação
+        public RegistroMovimentacao(int codigo, double quantidade, String tipo) {
+            this.dataHora = LocalDateTime.now(); // Captura a data e hora atual
+            this.quantidade = quantidade; // Define a quantidade
+            this.codigo = codigo; // Define o código do item
+            this.tipo = tipo; // Define o tipo de movimentação
+        }
+
+        // Formata a data e hora para exibição
+        public String getDataHoraFormatada() {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            return dataHora.format(formatter);
+        }
+
+        public double getQuantidade() {
+            return quantidade; // Retorna a quantidade movimentada
+        }
+
+        public int getCodigo() {
+            return codigo; // Retorna o código do item
+        }
+
+        public String getTipo() {
+            return tipo; // Retorna o tipo de movimentação
+        }
+    }
+}
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+// Classe que representa um insumo
+class Insumo {
+    private int codigo; // Código do insumo
+    private String descricao; // Descrição do insumo
+    public static HashMap<Integer, Double> quantidadesInsumos = new HashMap<>(); // Armazena as quantidades de insumos
+    public static List<Insumo> insumos = new ArrayList<>(); // Lista para armazenar insumos cadastrados
+
+    // Método para cadastrar um novo insumo
+    public void InsumoCadastro(int codigoInsumo, String descricaoInsumo) {
+        this.codigo = codigoInsumo; // Define o código do insumo
+        this.descricao = descricaoInsumo; // Define a descrição do insumo
+        insumos.add(this); // Adiciona o insumo à lista de insumos
+        JOptionPane.showMessageDialog(null, "Insumo cadastrado com sucesso!"); // Mensagem de sucesso
+    }
+
+    // Método para obter o código do insumo
+    public int getCodigoInsumo() {
+        return codigo; // Retorna o código do insumo
+    }
+
+    // Método para obter a descrição do insumo
+    public String getDescricaoInsumo() {
+        return descricao; // Retorna a descrição do insumo
+    }
+
+    // Método para buscar um insumo pelo código
+    public static Insumo buscarInsumo(int codigoInsumo) {
+        for (Insumo insum : insumos) { // Percorre a lista de insumos
+            if (insum.getCodigoInsumo() == codigoInsumo) { // Verifica se o código corresponde
+                return insum; // Retorna o insumo encontrado
+            }
+        }
+        JOptionPane.showMessageDialog(null, "Insumo com código " + codigoInsumo + " não encontrado."); // Mensagem de erro
+        return null; // Retorna null se não encontrado
+    }
+
+    // Método para verificar se um insumo existe
+    public static Insumo verificarInsumoExistente(int codigoInsumo) {
+        for (Insumo insum : insumos) { // Percorre a lista de insumos
+            if (insum.getCodigoInsumo() == codigoInsumo) { // Verifica se o código corresponde
+                return insum; // Retorna o insumo se encontrado
+            }
+        }
+        return null; // Retorna null se não encontrado
+    }
+
+    // Método para calcular a quantidade total de insumos
+    public static double quantidadeTotalInsumos() {
+        double total = 0; // Inicializa o total
+        for (Double quantidade : quantidadesInsumos.values()) { // Percorre as quantidades
+            total += quantidade; // Soma as quantidades
+        }
+        return total; // Retorna o total
+    }
+
+    // Método para excluir um insumo com tratamento de exceções
+    public static void excluirInsumo(int codigoInsumo) {
+        try {
+            Insumo insumo = verificarInsumoExistente(codigoInsumo); // Verifica se o insumo existe
+            if (insumo != null) { // Se encontrado
+                insumos.remove(insumo); // Remove da lista de insumos
+                quantidadesInsumos.remove(codigoInsumo); // Remove da HashMap de quantidades
+                JOptionPane.showMessageDialog(null, "Insumo com código " + codigoInsumo + " e descrição '" + insumo.descricao + "' excluído com sucesso."); // Mensagem de sucesso
+            } else {
+                JOptionPane.showMessageDialog(null, "Insumo com código " + codigoInsumo + " não encontrado."); // Mensagem de erro
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao excluir insumo: " + e.getMessage()); // Mensagem de erro
+        }
+    }
+
+    // Método para listar todos os insumos cadastrados
+    public static String listarInsumos() {
+        StringBuilder lista = new StringBuilder("Listagem de Insumos:\n"); // Inicializa a lista
+        for (Insumo insum : insumos) { // Percorre a lista de insumos
+            lista.append("Código: ").append(insum.getCodigoInsumo()) // Adiciona o código do insumo
+                    .append(", Descrição: ").append(insum.getDescricaoInsumo()) // Adiciona a descrição
+                    .append(", Quantidade: ").append(quantidadesInsumos.getOrDefault(insum.getCodigoInsumo(), 0.0)) // Adiciona a quantidade
+                    .append("\n"); // Nova linha
+        }
+        return lista.toString(); // Retorna a lista formatada
+    }
+}
+
+import javax.swing.*;
+
+// Classe para movimentar insumos e materiais
+class Movimentar {
+    public HistoricoMovimentacao registrar;
+
+    public Movimentar() {
+        registrar = new HistoricoMovimentacao();
+    }
+
+    public void movimentarMateriaPrima(int codigoInsumo, String tipoOperacao, int deposito, double quantidade) {
+        try {
+            Insumo insumo = Insumo.buscarInsumo(codigoInsumo);
+            Deposito deposit = Deposito.buscarDeposito(deposito);
+            if (insumo == null || deposit == null) return;
+
+            if (tipoOperacao.equals("E")) {
+                // Entrada no estoque materia prima
+                Deposito.quantidadesMateriaPrima.put(deposito, Deposito.quantidadesMateriaPrima.getOrDefault(deposito, 0.0) + quantidade);
+                Insumo.quantidadesInsumos.put(codigoInsumo, Insumo.quantidadesInsumos.getOrDefault(codigoInsumo, 0.0) + quantidade);
+
+                registrar.registrarMovimentacaoInsumo(codigoInsumo, quantidade, "Entrada");
+                registrar.registrarMovimentacaoDeposito(deposito, quantidade, "Entrada");
+
+                JOptionPane.showMessageDialog(null, "Entrada de " + quantidade + " unidades de " 
+                        + codigoInsumo + " " + insumo.getDescricaoInsumo() + " no depósito " + deposit.getDeposito() + ": " + deposit.getDescricaoDeposito());
+            } else if (tipoOperacao.equals("S")) {
+                // Saída do estoque materia prima
+                double quantidadeAtualInsumo = Insumo.quantidadesInsumos.getOrDefault(codigoInsumo, 0.0);
+                double quantidadeAtualDeposito = Deposito.quantidadesMateriaPrima.getOrDefault(deposito, 0.0);
+                if (quantidadeAtualInsumo >= quantidade && quantidadeAtualDeposito >= quantidade) {
+                    Deposito.quantidadesMateriaPrima.put(deposito, quantidadeAtualDeposito - quantidade);
+                    Insumo.quantidadesInsumos.put(codigoInsumo, quantidadeAtualInsumo - quantidade);
+
+                    registrar.registrarMovimentacaoInsumo(codigoInsumo, -quantidade, "Saída");
+                    registrar.registrarMovimentacaoDeposito(deposito, -quantidade, "Saída");
+
+                    JOptionPane.showMessageDialog(null, "Saída de " + quantidade + " unidades de " 
+                            + codigoInsumo + " "  + insumo.getDescricaoInsumo() + " no depósito " + deposit.getDeposito() + ": " + deposit.getDescricaoDeposito());
+                } else {
+                    JOptionPane.showMessageDialog(null, "Estoque insuficiente.");
+                }
+            } else if (tipoOperacao.equals("T")) {
+                // Transferir saldo para um novo depósito ou insumo
+                double quantidadeAtualInsumo = Insumo.quantidadesInsumos.getOrDefault(codigoInsumo, 0.0);
+                double quantidadeAtualDeposito = Deposito.quantidadesMateriaPrima.getOrDefault(deposito, 0.0);
+
+                if (quantidadeAtualInsumo >= quantidade) {
+                    // Transferir para um novo depósito
+                    int resposta = JOptionPane.showConfirmDialog(null, "Deseja informar um novo depósito para o saldo?", "Transferência", JOptionPane.YES_NO_OPTION);
+                    int novoDeposito = 0;
+                    if (resposta == JOptionPane.YES_OPTION) {
+                        novoDeposito = Integer.parseInt(JOptionPane.showInputDialog("Informe o novo depósito:"));
+                        Deposito depositoTransferencia = Deposito.buscarDeposito(novoDeposito);
+                        if (depositoTransferencia == null) {
+                            JOptionPane.showMessageDialog(null, "Depósito com código " + novoDeposito + " não encontrado.");
+                            return;
+                        } else {
+                            Deposito.quantidadesMateriaPrima.put(deposito, quantidadeAtualDeposito - quantidade);
+                            registrar.registrarMovimentacaoDeposito(deposito, -quantidade, "Transferência");
+                            Deposito.quantidadesMateriaPrima.put(novoDeposito, Deposito.quantidadesMateriaPrima.getOrDefault(novoDeposito, 0.0) + quantidade);
+                            registrar.registrarMovimentacaoDeposito(novoDeposito, quantidade, "Transferência");
+                        }
+                    }
+
+                    // Transferir para um novo insumo
+                    resposta = JOptionPane.showConfirmDialog(null, "Deseja informar um novo insumo para o saldo?", "Transferência", JOptionPane.YES_NO_OPTION);
+                    int novoCodigoInsumo = 0;
+                    if (resposta == JOptionPane.YES_OPTION) {
+                        novoCodigoInsumo = Integer.parseInt(JOptionPane.showInputDialog("Informe o novo insumo:"));
+                        Insumo insumoTransferencia = Insumo.buscarInsumo(novoCodigoInsumo);
+                        if (insumoTransferencia == null) {
+                            JOptionPane.showMessageDialog(null, "Insumo com código " + novoCodigoInsumo + " não encontrado.");
+                            return;
+                        } else {
+                            Insumo.quantidadesInsumos.put(codigoInsumo, quantidadeAtualInsumo - quantidade);
+                            registrar.registrarMovimentacaoInsumo(codigoInsumo, -quantidade, "Transferência");
+                            Insumo.quantidadesInsumos.put(novoCodigoInsumo, Insumo.quantidadesInsumos.getOrDefault(novoCodigoInsumo, 0.0) + quantidade);
+                            registrar.registrarMovimentacaoInsumo(novoCodigoInsumo, quantidade, "Transferência");
+                        }
+                    }
+
+                    JOptionPane.showMessageDialog(null, "Transferência de " + quantidade + " unidades de " 
+                            + codigoInsumo + " "  + insumo.getDescricaoInsumo() + " para o depósito " + novoDeposito);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Estoque do insumo insuficiente.");
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao movimentar insumo: " + e.getMessage());
+        }
+    }
+
+    public void movimentarMaterialElaborado(int codigoMaterial, int codigoEtapaProducao, String tipoOperacao, double quantidade, int codigoDeposito) {
+        try {
+            Materiais material = Materiais.buscarMaterial(codigoMaterial);
+            EtapasProdutivas etapa = EtapasProdutivas.buscarEtapa(codigoEtapaProducao);
+            Deposito depositoOrigem = Deposito.buscarDeposito(codigoDeposito);
+
+            if (material == null || etapa == null || depositoOrigem == null) return;
+
+            if (tipoOperacao.equals("E")) {
+
+                // Entrada no estoque de material elaborado
+                Deposito.depositosElaborados.put(codigoDeposito, Deposito.depositosElaborados.getOrDefault(codigoDeposito, 0.0) + quantidade);
+                Materiais.quantidadesMateriaisElaborado.put(codigoMaterial, Materiais.quantidadesMateriaisElaborado.getOrDefault(codigoMaterial, 0.0) + quantidade);
+                EtapasProdutivas.quantidadesEtapas.put(codigoEtapaProducao, EtapasProdutivas.quantidadesEtapas.getOrDefault(codigoMaterial, 0.0) + quantidade);
+
+                // Registrar movimentações
+                registrar.registrarMovimentacaoMaterialElaborado(codigoMaterial, quantidade, "Entrada");
+                registrar.registrarMovimentacaoDeposito(codigoDeposito, quantidade, "Entrada");
+                registrar.registrarMovimentacaoEtapaProdutiva(codigoEtapaProducao, quantidade, "Entrada");
+
+                JOptionPane.showMessageDialog(null, "Entrada de " + quantidade + " unidades de material elaborado: \n" +
+                       material.getCodigoMaterial()+ " - " +material.getDescricaoMaterial()
+                        + " no depósito "+ depositoOrigem.getDeposito() + " - " + depositoOrigem.getDescricaoDeposito() +
+                        " da etapa " + etapa.getNumeroEtapa() + " - " + etapa.getDescricaoEtapa());
+            } else if (tipoOperacao.equals("S")) {
+                // Saída do estoque de material elaborado
+                double quantidadeAtualMaterialElaborado = Materiais.quantidadesMateriaisElaborado.getOrDefault(codigoMaterial, 0.0);
+                double quantidadeAtualDeposito = Deposito.depositosElaborados.getOrDefault(codigoDeposito, 0.0);
+                double quantidadeAtualEtapa = EtapasProdutivas.quantidadesEtapas.getOrDefault(codigoEtapaProducao, 0.0);
+
+                if (quantidadeAtualMaterialElaborado >= quantidade) {
+                    Materiais.quantidadesMateriaisElaborado.put(codigoMaterial, quantidadeAtualMaterialElaborado - quantidade);
+                    Deposito.depositosElaborados.put(codigoDeposito, quantidadeAtualDeposito - quantidade);
+                    EtapasProdutivas.quantidadesEtapas.put(codigoEtapaProducao, quantidadeAtualEtapa - quantidade);
+
+                    // Registrar movimentações
+                    registrar.registrarMovimentacaoMaterialElaborado(codigoMaterial, -quantidade, "Saída");
+                    registrar.registrarMovimentacaoDeposito(codigoDeposito, -quantidade, "Saída");
+                    registrar.registrarMovimentacaoEtapaProdutiva(codigoEtapaProducao, -quantidade, "Saída");
+
+                    JOptionPane.showMessageDialog(null, "Saída de " + quantidade + " unidades de material elaborado: \n" +
+                            material.getCodigoMaterial()+ " - " +material.getDescricaoMaterial()
+                            + " no depósito "+ depositoOrigem.getDeposito() + " - " + depositoOrigem.getDescricaoDeposito() +
+                            " da etapa " + etapa.getNumeroEtapa() + " - " + etapa.getDescricaoEtapa());
+                } else {
+                    JOptionPane.showMessageDialog(null, "Estoque de material elaborado insuficiente.");
+                }
+
+
+
+            } else if (tipoOperacao.equals("T")) {
+                // Transferir saldo para um novo depósito ou material
+                double quantidadeAtualMaterialElaborado = Materiais.quantidadesMateriaisElaborado.getOrDefault(codigoMaterial, 0.0);
+                double quantidadeAtualDeposito = Deposito.depositosElaborados.getOrDefault(codigoDeposito, 0.0);
+                double quantidadeAtualEtapa = EtapasProdutivas.quantidadesEtapas.getOrDefault(codigoEtapaProducao, 0.0);
+
+                if (quantidadeAtualMaterialElaborado >= quantidade) {
+                    // Transferir para um novo depósito
+                    int resposta = JOptionPane.showConfirmDialog(null, "Deseja informar um novo depósito para o saldo?", "Transferência", JOptionPane.YES_NO_OPTION);
+                    int novoDeposito = 0;
+                    if (resposta == JOptionPane.YES_OPTION) {
+                        novoDeposito = Integer.parseInt(JOptionPane.showInputDialog("Informe o novo depósito:"));
+                        Deposito depositoTransferencia = Deposito.buscarDeposito(novoDeposito);
+                        if (depositoTransferencia == null) {
+                            return;
+                        } else {
+                            // Atualiza a quantidade no depósito original
+                            Deposito.depositosElaborados.put(codigoDeposito, quantidadeAtualDeposito - quantidade);
+                            registrar.registrarMovimentacaoDeposito(codigoDeposito, -quantidade, "Transferência");
+
+                            // Atualiza a quantidade no novo depósito
+                            Deposito.depositosElaborados.put(novoDeposito, Deposito.depositosElaborados.getOrDefault(novoDeposito, 0.0) + quantidade);
+                            registrar.registrarMovimentacaoDeposito(novoDeposito, quantidade, "Transferência");
+                        }
+                    }
+
+                    // Transferir para um novo material
+                    resposta = JOptionPane.showConfirmDialog(null, "Deseja informar um novo material para o saldo?", "Transferência", JOptionPane.YES_NO_OPTION);
+                    int novoCodigoMaterial = 0;
+                    if (resposta == JOptionPane.YES_OPTION) {
+                        novoCodigoMaterial = Integer.parseInt(JOptionPane.showInputDialog("Informe o novo material:"));
+                        Materiais materialTransferencia = Materiais.buscarMaterial(novoCodigoMaterial);
+                        if (materialTransferencia == null) {
+                            return;
+                        } else {
+                            // Atualiza a quantidade do material original
+                            Materiais.quantidadesMateriaisElaborado.put(codigoMaterial, quantidadeAtualMaterialElaborado - quantidade);
+                            registrar.registrarMovimentacaoMaterialElaborado(codigoMaterial, -quantidade, "Transferência");
+
+                            // Atualiza a quantidade no novo material
+                            Materiais.quantidadesMateriaisElaborado.put(novoCodigoMaterial, Materiais.quantidadesMateriaisElaborado.getOrDefault(novoCodigoMaterial, 0.0) + quantidade);
+                            registrar.registrarMovimentacaoMaterialElaborado(novoCodigoMaterial, quantidade, "Transferência");
+                        }
+                    }
+
+                    // Transferir para uma nova etapa
+                    resposta = JOptionPane.showConfirmDialog(null, "Deseja informar uma nova etapa para o saldo?", "Transferência", JOptionPane.YES_NO_OPTION);
+                    int novoCodigoEtapa = 0;
+                    if (resposta == JOptionPane.YES_OPTION) {
+                        novoCodigoEtapa = Integer.parseInt(JOptionPane.showInputDialog("Informe a nova etapa:"));
+                        EtapasProdutivas etapaTransferencia = EtapasProdutivas.buscarEtapa(novoCodigoEtapa);
+                        if (etapaTransferencia == null) {
+                            return;
+                        } else {
+                            // Atualiza a quantidade da etapa original
+                            EtapasProdutivas.quantidadesEtapas.put(codigoEtapaProducao, quantidadeAtualEtapa - quantidade);
+                            registrar.registrarMovimentacaoEtapaProdutiva(codigoEtapaProducao, -quantidade, "Transferência");
+
+                            // Atualiza a quantidade na nova etapa
+                            EtapasProdutivas.quantidadesEtapas.put(novoCodigoEtapa, EtapasProdutivas.quantidadesEtapas.getOrDefault(novoCodigoEtapa, 0.0) + quantidade);
+                            registrar.registrarMovimentacaoEtapaProdutiva(novoCodigoEtapa, quantidade, "Transferência");
+                        }
+                    }
+
+                    JOptionPane.showMessageDialog(null, "Transferência de " + quantidade + " unidades de " +
+                            material.getCodigoMaterial() + " - " + material.getDescricaoMaterial() +
+                            " para o depósito " + novoDeposito + " e material " + novoCodigoMaterial + " na etapa " + novoCodigoEtapa);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Estoque do material elaborado insuficiente.");
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao movimentar material elaborado: " + e.getMessage());
+        }
+    }
+
+    public void movimentarMaterialAcabado(int codigoMaterial, String tipoOperacao, int codigoDeposito, double quantidade) {
+        try {
+            Materiais material = Materiais.buscarMaterial(codigoMaterial);
+            Deposito deposito = Deposito.buscarDeposito(codigoDeposito);
+
+            if (material == null || deposito == null) {
+                return;
+            }
+
+            if (tipoOperacao.equals("E")) {
+                // Entrada no estoque de material acabado
+                Deposito.depositosAcabado.put(codigoDeposito, Deposito.depositosAcabado.getOrDefault(codigoDeposito, 0.0) + quantidade);
+                Materiais.quantidadesMateriaisAcabado.put(codigoMaterial, Materiais.quantidadesMateriaisAcabado.getOrDefault(codigoMaterial, 0.0) + quantidade);
+
+                registrar.registrarMovimentacaoMaterialAcabado(codigoMaterial, quantidade, "Entrada");
+                registrar.registrarMovimentacaoDeposito(codigoDeposito, quantidade, "Entrada");
+
+                JOptionPane.showMessageDialog(null, "Entrada de " + quantidade + " unidades de material acabado: \n" +
+                        material.getCodigoMaterial() + " - " + material.getDescricaoMaterial() +
+                        " no depósito " + deposito.getDeposito() + " - " + deposito.getDescricaoDeposito());
+            } else if (tipoOperacao.equals("S")) {
+                // Saída do estoque de material acabado
+                double quantidadeAtualMaterial = Materiais.quantidadesMateriaisAcabado.getOrDefault(codigoMaterial, 0.0);
+                double quantidadeAtualDeposito = Deposito.depositosAcabado.getOrDefault(codigoDeposito, 0.0);
+
+                if (quantidadeAtualMaterial >= quantidade) {
+                    Materiais.quantidadesMateriaisAcabado.put(codigoMaterial, quantidadeAtualMaterial - quantidade);
+                    Deposito.depositosAcabado.put(codigoDeposito, quantidadeAtualDeposito - quantidade);
+
+                    registrar.registrarMovimentacaoMaterialAcabado(codigoMaterial, -quantidade, "Saída");
+                    registrar.registrarMovimentacaoDeposito(codigoDeposito, -quantidade, "Saída");
+
+                    JOptionPane.showMessageDialog(null, "Saída de " + quantidade + " unidades de material acabado: \n" +
+                            material.getCodigoMaterial() + " - " + material.getDescricaoMaterial() +
+                            " no depósito " + deposito.getDeposito() + " - " + deposito.getDescricaoDeposito());
+                } else {
+                    JOptionPane.showMessageDialog(null, "Estoque de material acabado insuficiente.");
+                }
+            } else if (tipoOperacao.equals("T")) {
+                // Transferir saldo para um novo depósito ou material
+                double quantidadeAtualMaterial = Materiais.quantidadesMateriaisAcabado.getOrDefault(codigoMaterial, 0.0);
+
+                if (quantidadeAtualMaterial >= quantidade) {
+                    // Transferir para um novo depósito
+                    int resposta = JOptionPane.showConfirmDialog(null, "Deseja informar um novo depósito para o saldo?", "Transferência", JOptionPane.YES_NO_OPTION);
+                    if (resposta == JOptionPane.YES_OPTION) {
+                        int novoDeposito = Integer.parseInt(JOptionPane.showInputDialog("Informe o novo depósito:"));
+                        Deposito depositoTransferencia = Deposito.buscarDeposito(novoDeposito);
+                        if (depositoTransferencia == null) {
+                            return;
+                        } else {
+                            // Atualiza a quantidade no depósito original
+                            Deposito.depositosAcabado.put(codigoDeposito,
+                                    Deposito.depositosAcabado.getOrDefault(codigoDeposito, 0.0) - quantidade);
+                            registrar.registrarMovimentacaoDeposito(codigoDeposito, -quantidade, "Transferência");
+
+                            // Atualiza a quantidade no novo depósito
+                            Deposito.depositosAcabado.put(novoDeposito,
+                                    Deposito.depositosAcabado.getOrDefault(novoDeposito, 0.0) + quantidade);
+                            registrar.registrarMovimentacaoDeposito(novoDeposito, quantidade, "Transferência");
+                        }
+                    }
+
+                    // Transferir para um novo material
+                    resposta = JOptionPane.showConfirmDialog(null, "Deseja informar um novo material para o saldo?", "Transferência", JOptionPane.YES_NO_OPTION);
+                    if (resposta == JOptionPane.YES_OPTION) {
+                        int novoCodigoMaterial = Integer.parseInt(JOptionPane.showInputDialog("Informe o novo material:"));
+                        Materiais materialTransferencia = Materiais.buscarMaterial(novoCodigoMaterial);
+                        if (materialTransferencia == null) {
+                            return;
+                        } else {
+                            // Atualiza a quantidade do material original
+                            Materiais.quantidadesMateriaisAcabado.put(codigoMaterial, quantidadeAtualMaterial - quantidade);
+                            registrar.registrarMovimentacaoMaterialAcabado(codigoMaterial, -quantidade, "Transferência");
+
+                            // Atualiza a quantidade no novo material
+                            Materiais.quantidadesMateriaisAcabado.put(novoCodigoMaterial,
+                                    Materiais.quantidadesMateriaisAcabado.getOrDefault(novoCodigoMaterial, 0.0) + quantidade);
+                            registrar.registrarMovimentacaoMaterialAcabado(novoCodigoMaterial, quantidade, "Transferência");
+                        }
+                    }
+
+                } else {
+                    JOptionPane.showMessageDialog(null, "Estoque do material elaborado insuficiente.");
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao movimentar material elaborado: " + e.getMessage());
+        }
+    }
+}
+
+import javax.swing.*;
+import java.util.HashMap;
+
+// Classe que representa as etapas produtivas
+class EtapasProdutivas {
+    private static HashMap<Integer, EtapasProdutivas> etapasProdutivas = new HashMap<>(); // Armazena as etapas produtivas
+    public static HashMap<Integer, Double> quantidadesEtapas = new HashMap<>(); // Armazena quantidades para cada etapa
+    private String descricaoEtapa; // Descrição da etapa
+    private int numeroEtapa; // Número da etapa
+
+    // Método para cadastrar uma nova etapa produtiva
+    public void CadastroEtapasProdutivas(String descricaoEtapa, int codigoEtapa) {
+        this.descricaoEtapa = descricaoEtapa; // Define a descrição da etapa
+        this.numeroEtapa = codigoEtapa; // Define o número da etapa
+
+        // Verifica se o código da etapa já existe
+        if (!isCodigoExistente(codigoEtapa)) {
+            etapasProdutivas.put(codigoEtapa, this); // Adiciona a etapa ao HashMap
+            JOptionPane.showMessageDialog(null, "Etapa cadastrada com sucesso!"); // Mensagem de sucesso
+        }
+    }
+
+    // Verifica se a etapa existe pelo código
+    private boolean isCodigoExistente(int codigoEtapa) {
+        return etapasProdutivas.containsKey(codigoEtapa); // Retorna true se o código existir
+    }
+
+    // Método para obter a descrição da etapa
+    public String getDescricaoEtapa() {
+        return descricaoEtapa; // Retorna a descrição da etapa
+    }
+
+    // Método para obter o número da etapa
+    public int getNumeroEtapa() {
+        return numeroEtapa; // Retorna o número da etapa
+    }
+
+    // Verifica se a etapa existe e retorna a etapa se existir
+    public static EtapasProdutivas verificarEtapaExistente(int codigoEtapa) {
+        return etapasProdutivas.get(codigoEtapa); // Retorna a etapa correspondente ao código
+    }
+
+    // Listar todas as etapas produtivas
+    public static String listarEtapas() {
+        StringBuilder listarTodasEtapas = new StringBuilder("Listagem de todas as etapas: \n"); // Inicializa a lista
+        for (EtapasProdutivas etapa : etapasProdutivas.values()) { // Percorre as etapas
+            listarTodasEtapas.append(etapa.toString()) // Adiciona a representação da etapa
+                    .append(", Quantidade: ").append(quantidadesEtapas.getOrDefault(etapa.getNumeroEtapa(), 0.0)).append("\n"); // Adiciona a quantidade
+        }
+        return listarTodasEtapas.toString(); // Retorna a lista formatada
+    }
+
+    // Pesquisar uma etapa pelo código
+    public static EtapasProdutivas buscarEtapa(int codigoEtapa) {
+        EtapasProdutivas etapa = etapasProdutivas.get(codigoEtapa); // Busca a etapa pelo código
+        if (etapa != null) {
+            return etapa; // Retorna a etapa se encontrada
+        } else {
+            JOptionPane.showMessageDialog(null, "Etapa com código " + codigoEtapa + " não encontrada."); // Mensagem de erro
+            return null; // Retorna null se não encontrada
+        }
+    }
+
+    // Excluir uma etapa com tratamento de exceções
+    public static void excluirEtapa(int codigoEtapa) {
+        try {
+            if (etapasProdutivas.containsKey(codigoEtapa)) { // Verifica se a etapa existe
+                etapasProdutivas.remove(codigoEtapa); // Remove a etapa do HashMap
+                quantidadesEtapas.remove(codigoEtapa); // Remove a quantidade associada à etapa
+                JOptionPane.showMessageDialog(null, "Etapa com código " + codigoEtapa + " excluída com sucesso."); // Mensagem de sucesso
+            } else {
+                JOptionPane.showMessageDialog(null, "Etapa com código " + codigoEtapa + " não encontrada."); // Mensagem de erro
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao excluir etapa: " + e.getMessage()); // Mensagem de erro
+        }
+    }
+
+    // Método para representar a etapa como uma string
+    @Override
+    public String toString() {
+        return "Etapa " + numeroEtapa + ": " + descricaoEtapa; // Retorna a descrição da etapa
+    }
+}
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+// Classe que representa materiais, tanto elaborados quanto acabados
+class Materiais {
+    public static HashMap<Integer, Double> quantidadesMateriaisElaborado = new HashMap<>(); // Armazena quantidades de materiais elaborados
+    public static HashMap<Integer, Double> quantidadesMateriaisAcabado = new HashMap<>(); // Armazena quantidades de materiais acabados
+    private static List<Materiais> materiais = new ArrayList<>(); // Lista para armazenar todos os materiais cadastrados
+    private static int proximoCodigo = 1; // Código sequencial para novos materiais
+
+    private int codigoMaterial; // Código do material
+    private String descricaoMaterial; // Descrição do material
+
+    // Método para cadastrar um novo material
+    public void CadastroMaterialElaborado(String descricaoMaterialElaborado) {
+        this.codigoMaterial = proximoCodigo++; // Atribui um código único ao material
+        this.descricaoMaterial = descricaoMaterialElaborado; // Define a descrição do material
+        quantidadesMateriaisAcabado.put(codigoMaterial, 0.0); // Inicializa a quantidade de materiais acabados
+        quantidadesMateriaisElaborado.put(codigoMaterial, 0.0); // Inicializa a quantidade de materiais elaborados
+        materiais.add(this); // Adiciona o material à lista de materiais
+        JOptionPane.showMessageDialog(null, "Material cadastrado com sucesso!"); // Mensagem de sucesso
+    }
+
+    // Método para buscar um material pelo código
+    public static Materiais buscarMaterial(int codigo) {
+        for (Materiais material : materiais) { // Percorre a lista de materiais
+            if (material.getCodigoMaterial() == codigo) { // Verifica se o código corresponde
+                return material; // Retorna o material encontrado
+            }
+        }
+        JOptionPane.showMessageDialog(null, "Material com o código " + codigo + " não encontrado!"); // Mensagem de erro
+        return null; // Retorna null se não encontrado
+    }
+
+    // Método para obter a descrição do material
+    public String getDescricaoMaterial() {
+        return descricaoMaterial; // Retorna a descrição do material
+    }
+
+    // Método para obter o código do material
+    public int getCodigoMaterial() {
+        return codigoMaterial; // Retorna o código do material
+    }
+
+    // Método para listar todos os materiais elaborados
+    public static String listarMateriaisElaborado() {
+        StringBuilder lista = new StringBuilder("Listagem de Materiais Elaborados:\n"); // Inicializa a lista
+        for (Materiais material : materiais) { // Percorre a lista de materiais
+            lista.append("Código: ").append(material.getCodigoMaterial()) // Adiciona o código do material
+                    .append(", Descrição: ").append(material.getDescricaoMaterial()) // Adiciona a descrição
+                    .append(", Quantidade: ").append(quantidadesMateriaisElaborado.getOrDefault(material.getCodigoMaterial(), 0.0)) // Adiciona a quantidade
+                    .append("\n"); // Nova linha
+        }
+        return lista.toString(); // Retorna a lista formatada
+    }
+
+    // Método para listar todos os materiais acabados
+    public static String listarMateriaisAcabados() {
+        StringBuilder lista = new StringBuilder("Listagem de Materiais Acabados:\n"); // Inicializa a lista
+        for (Materiais material : materiais) { // Percorre a lista de materiais
+            lista.append("Código: ").append(material.getCodigoMaterial()) // Adiciona o código do material
+                    .append(", Descrição: ").append(material.getDescricaoMaterial()) // Adiciona a descrição
+                    .append(", Quantidade: ").append(quantidadesMateriaisAcabado.getOrDefault(material.getCodigoMaterial(), 0.0)) // Adiciona a quantidade
+                    .append("\n"); // Nova linha
+        }
+        return lista.toString(); // Retorna a lista formatada
+    }
+
+    // Método para excluir um material elaborado
+    public static void excluirMaterialElaborado(int codigo) {
+        Materiais material = buscarMaterial(codigo); // Busca o material pelo código
+        if (material != null) { // Se encontrado
+            materiais.remove(material); // Remove o material da lista
+            quantidadesMateriaisElaborado.remove(codigo); // Remove a quantidade do HashMap
+            JOptionPane.showMessageDialog(null, "Material com código " + codigo + " excluído com sucesso."); // Mensagem de sucesso
+        } else {
+            JOptionPane.showMessageDialog(null, "Material com código " + codigo + " não encontrado."); // Mensagem de erro
+        }
+    }
+
+    // Método para excluir um material acabado
+    public static void excluirMaterialAcabado(int codigo) {
+        Materiais material = buscarMaterial(codigo); // Busca o material pelo código
+        if (material != null) { // Se encontrado
+            materiais.remove(material); // Remove o material da lista
+            quantidadesMateriaisAcabado.remove(codigo); // Remove a quantidade do HashMap
+            JOptionPane.showMessageDialog(null, "Material com código " + codigo + " excluído com sucesso."); // Mensagem de sucesso
+        } else {
+            JOptionPane.showMessageDialog(null, "Material com código " + codigo + " não encontrado."); // Mensagem de erro
+        }
+    }
+
+    // Método para calcular o total em estoque de materiais elaborados
+    public static double totalEmEstoqueElaborado() {
+        double total = 0.0; // Inicializa o total
+        try {
+            for (double quantidade : quantidadesMateriaisElaborado.values()) { // Percorre as quantidades
+                total += quantidade; // Soma as quantidades
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao calcular o total em estoque: " + e.getMessage()); // Mensagem de erro
+            return 0.0; // Retorna 0 em caso de erro
+        }
+        return total; // Retorna o total calculado
+    }
+
+    // Método para calcular o total em estoque de materiais acabados
+    public static double totalEmEstoqueAcabado() {
+        double total = 0.0; // Inicializa o total
+        try {
+            for (double quantidade : quantidadesMateriaisAcabado.values()) { // Percorre as quantidades
+                total += quantidade; // Soma as quantidades
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro ao calcular o total em estoque: " + e.getMessage()); // Mensagem de erro
+            return 0.0; // Retorna 0 em caso de erro
+        }
+        return total; // Retorna o total calculado
+    }
+}
+
+import javax.swing.*;
+
+public class SistemaEstoque {
+    public static void main(String[] args) {
+        Movimentar movimentar = new Movimentar();
+        boolean continuar = true;
+
+        while (continuar) {
+            String[] opcoes = {
+                    "Cadastrar Insumo",
+                    "Cadastrar Depósito",
+                    "Cadastrar Etapa",
+                    "Cadastrar Material",
+                    "Movimentar Insumo",
+                    "Movimentar Material Elaborado",
+                    "Movimentar Material Acabado",
+                    "Listar Deposito de Materia Prima",
+                    "Listar Deposito Elaborado",
+                    "Listar Materiais Acabado",
+                    "Listar Deposito acabado",
+                    "Buscar Insumo",
+                    "Buscar Etapa",
+                    "Buscar Elaborado",
+                    "Listar Insumos",
+                    "Listar Depositos",
+                    "Listar Etapas",
+                    "Listar Materiais Elaborado",
+                    "Excluir Insumo",
+                    "Excluir Depósito",
+                    "Excluir Etapa",
+                    "Excluir Material Elaborado",
+                    "Excluir Material Acabado",
+                    "Ver Histórico de Insumos",
+                    "Ver Histórico de Depósitos",
+                    "Ver Histórico de Material Elaborado",
+                    "Ver Histórico de Material Acabado",
+                    "Ver Histórico de Etapas Produtivas",
+                    "Ver Total de Matéria Prima",
+                    "Ver Total de Material Elaborado",
+                    "Ver Total de Material Acabado",
+                    "Sair"
+            };
+
+            String escolha = (String) JOptionPane.showInputDialog(null, "Escolha uma ação:", "Menu", JOptionPane.QUESTION_MESSAGE, null, opcoes, opcoes);
+
+            switch (escolha) {
+                case "Cadastrar Insumo":
+                    cadastrarInsumo();
+                    break;
+
+                case "Cadastrar Depósito":
+                    cadastrarDeposito();
+                    break;
+
+                case "Cadastrar Etapa":
+                    cadastrarEtapa();
+                    break;
+
+                case "Cadastrar Material":
+                    cadastrarMaterial();
+                    break;
+
+                case "Movimentar Insumo":
+                    movimentarInsumo(movimentar);
+                    break;
+
+                case "Movimentar Material Elaborado":
+                    movimentarMaterialElaborado(movimentar);
+                    break;
+
+                case "Movimentar Material Acabado":
+                    movimentarMaterialAcabado(movimentar);
+                    break;
+
+                case "Buscar Insumo":
+                    buscarInsumo();
+                    break;
+
+                case "Buscar Depósito":
+                    buscarDeposito();
+                    break;
+
+                case "Buscar Etapa":
+                    buscarEtapa();
+                    break;
+
+                case "Buscar Elaborado":
+                    buscarMaterialElaborado();
+                    break;
+
+                case "Listar Etapas":
+                    listarEtapas();
+                    break;
+
+                case "Listar Materiais Elaborado":
+                    listarMateriaisElborado();
+                    break;
+
+                case "Listar Materiais Acabado":
+                    listarMateriaisAcabado();
+                    break;
+
+                case "Listar Insumos":
+                    listarInsumos();
+                    break;
+
+                case "Listar Deposito de Materia Prima":
+                    listarDepositosMateriaPrima();
+                    break;
+
+                case "Listar Deposito Elaborado":
+                    listarDepositosElaborado();
+                    break;
+
+                case "Listar Deposito acabado":
+                    listarDepositosAcabado();
+                    break;
+
+
+                case "Excluir Insumo":
+                    excluirInsumo();
+                    break;
+
+                case "Excluir Depósito":
+                    excluirDeposito();
+                    break;
+
+                case "Excluir Etapa":
+                    excluirEtapa();
+                    break;
+
+                case "Excluir Material Elaborado":
+                    excluirMaterialElaborado();
+                    break;
+
+                case "Excluir Material Acabado":
+                   excluirMaterialAcabado();
+                    break;
+
+                case "Ver Histórico de Insumos":
+                    verHistoricoInsumos(movimentar);
+                    break;
+
+                case "Ver Histórico de Depósitos":
+                    verHistoricoDepositos(movimentar);
+                    break;
+
+                case "Ver Histórico de Material Elaborado":
+                    verHistoricoMaterialElaborado(movimentar);
+                    break;
+
+                case "Ver Histórico de Material Acabado":
+                    verHistoricoMaterialAcabado(movimentar);
+                    break;
+
+
+                case "Ver Histórico de Etapas Produtivas":
+                    verHistoricoEtapasProdutivas(movimentar);
+                    break;
+
+                case "Ver Total de Matéria Prima":
+                    verTotalMateriaPrima();
+                    break;
+
+                case "Ver Total de Material Elaborado":
+                    verTotalMaterialElaborado();
+                    break;
+
+                case "Ver Total de Material Acabado":
+                    verTotalMaterialAcabado();
+                    break;
+
+                case "Sair":
+                    continuar = false;
+                    break;
+
+                default:
+                    JOptionPane.showMessageDialog(null, "Opção inválida!");
+            }
+        }
+    }
+
+    private static void cadastrarInsumo() {
+        int codigoInsumo;
+        String codigoInsumoStr = JOptionPane.showInputDialog("Informe o código do insumo:");
+
+        if (codigoInsumoStr == null || codigoInsumoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código não pode ser vazio.");
+            return;
+        }
+
+        try {
+            codigoInsumo = Integer.parseInt(codigoInsumoStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código deve ser um número inteiro.");
+            return;
+        }
+
+        if (Insumo.verificarInsumoExistente(codigoInsumo) == null) {
+            String descricaoInsumo = JOptionPane.showInputDialog("Informe a descrição do insumo:");
+            if (descricaoInsumo == null || descricaoInsumo.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Descrição não pode ser vazia.");
+                return;
+            }
+
+            Insumo novoInsumo = new Insumo();
+            novoInsumo.InsumoCadastro(codigoInsumo, descricaoInsumo);
+        } else {
+            JOptionPane.showMessageDialog(null, "Insumo com código " + codigoInsumo + " já existe.");
+        }
+    }
+
+    private static void cadastrarDeposito() {
+        int codigoDeposito;
+        String codigoDepositoStr = JOptionPane.showInputDialog("Informe o código do depósito:");
+
+        if (codigoDepositoStr == null || codigoDepositoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código não pode ser vazio.");
+            return;
+        }
+
+        try {
+            codigoDeposito = Integer.parseInt(codigoDepositoStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código deve ser um número inteiro.");
+            return;
+        }
+
+        if (Deposito.verificarDepositoExistente(codigoDeposito) == null) {
+            String descricaoDeposito = JOptionPane.showInputDialog("Informe a descrição do depósito (opcional):");
+            Deposito novoDeposito = new Deposito();
+            novoDeposito.DepositoCadastro(codigoDeposito, descricaoDeposito);
+        } else {
+            JOptionPane.showMessageDialog(null, "Depósito com código " + codigoDeposito + " já existe.");
+        }
+    }
+
+    private static void cadastrarEtapa() {
+        String descricaoEtapa = JOptionPane.showInputDialog("Informe a descrição da etapa:");
+        if (descricaoEtapa == null || descricaoEtapa.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Descrição não pode ser vazia.");
+            return;
+        }
+
+        String codigoEtapaStr = JOptionPane.showInputDialog("Informe o código da etapa:");
+        if (codigoEtapaStr == null || codigoEtapaStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código não pode ser vazio.");
+            return;
+        }
+
+        int codigoEtapa;
+        try {
+            codigoEtapa = Integer.parseInt(codigoEtapaStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código deve ser um número inteiro.");
+            return;
+        }
+
+        if (EtapasProdutivas.verificarEtapaExistente(codigoEtapa) == null) {
+            EtapasProdutivas novaEtapa = new EtapasProdutivas();
+            novaEtapa.CadastroEtapasProdutivas(descricaoEtapa, codigoEtapa);
+        } else {
+            JOptionPane.showMessageDialog(null, "Etapa com código " + codigoEtapa + " já existe.");
+        }
+    }
+    public static void cadastrarMaterial() {
+        String descricaoMaterial = JOptionPane.showInputDialog("Informe a descrição do material elaborado:");
+        if (descricaoMaterial == null || descricaoMaterial.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Descrição não pode ser vazia.");
+        }else {
+            Materiais material = new Materiais();
+            material.CadastroMaterialElaborado(descricaoMaterial);
+        }
+    }
+
+    private static void movimentarInsumo(Movimentar movimentar) {
+        String codigoInsumoStr = JOptionPane.showInputDialog("Informe o código do insumo:");
+        if (codigoInsumoStr == null || codigoInsumoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código do insumo não pode ser vazio.");
+            return;
+        }
+
+        int codigoInsumo;
+        try {
+            codigoInsumo = Integer.parseInt(codigoInsumoStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código do insumo deve ser um número inteiro.");
+            return;
+        }
+
+        String tipoOperacao = JOptionPane.showInputDialog("Informe o tipo (E - Entrada, S - Saída, T - Transferência):").toUpperCase();
+        if (tipoOperacao == null || (!tipoOperacao.equals("E") && !tipoOperacao.equals("S") && !tipoOperacao.equals("T"))) {
+            JOptionPane.showMessageDialog(null, "Tipo de operação deve ser E, S ou T.");
+            return;
+        }
+
+        String depositoStr = JOptionPane.showInputDialog("Informe o depósito:");
+        if (depositoStr == null || depositoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Depósito não pode ser vazio.");
+            return;
+        }
+
+        int deposito;
+        try {
+            deposito = Integer.parseInt(depositoStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Depósito deve ser um número inteiro.");
+            return;
+        }
+
+        String quantidadeStr = JOptionPane.showInputDialog("Informe a quantidade:");
+        if (quantidadeStr == null || quantidadeStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Quantidade não pode ser vazia.");
+            return;
+        }
+
+        double quantidade;
+        try {
+            quantidade = Double.parseDouble(quantidadeStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Quantidade deve ser um número.");
+            return;
+        }
+
+        movimentar.movimentarMateriaPrima(codigoInsumo, tipoOperacao, deposito, quantidade);
+        JOptionPane.showMessageDialog(null, "Movimentação realizada com sucesso!");
+    }
+
+    private static void movimentarMaterialElaborado(Movimentar movimentar) {
+        String codigoMaterialStr = JOptionPane.showInputDialog("Informe o código do material:");
+        if (codigoMaterialStr == null || codigoMaterialStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código do material não pode ser vazio.");
+            return;
+        }
+
+        int codigoMaterial;
+        try {
+            codigoMaterial = Integer.parseInt(codigoMaterialStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código do material deve ser um número inteiro.");
+            return;
+        }
+
+        String codigoEtapaStr = JOptionPane.showInputDialog("Informe o código da etapa:");
+        if (codigoEtapaStr == null || codigoEtapaStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código da etapa não pode ser vazio.");
+            return;
+        }
+
+        int codigoEtapa;
+        try {
+            codigoEtapa = Integer.parseInt(codigoEtapaStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código da etapa deve ser um número inteiro.");
+            return;
+        }
+
+        String tipoOperacao = JOptionPane.showInputDialog("Informe o tipo (E - Entrada, S - Saída, T - Transferência):").toUpperCase();
+        if (tipoOperacao == null || (!tipoOperacao.equals("E") && !tipoOperacao.equals("S") && !tipoOperacao.equals("T"))) {
+            JOptionPane.showMessageDialog(null, "Tipo de operação deve ser E, S ou T.");
+            return;
+        }
+
+        String depositoStr = JOptionPane.showInputDialog("Informe o depósito:");
+        if (depositoStr == null || depositoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Depósito não pode ser vazio.");
+            return;
+        }
+
+        int deposito;
+        try {
+            deposito = Integer.parseInt(depositoStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Depósito deve ser um número inteiro.");
+            return;
+        }
+
+        String quantidadeStr = JOptionPane.showInputDialog("Informe a quantidade:");
+        if (quantidadeStr == null || quantidadeStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Quantidade não pode ser vazia.");
+            return;
+        }
+
+        double quantidade;
+        try {
+            quantidade = Double.parseDouble(quantidadeStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Quantidade deve ser um número.");
+            return;
+        }
+
+        // Chama o método para movimentar o material elaborado
+        movimentar.movimentarMaterialElaborado(codigoMaterial, codigoEtapa, tipoOperacao, quantidade, deposito);
+        JOptionPane.showMessageDialog(null, "Movimentação realizada com sucesso!");
+    }
+
+    private static void movimentarMaterialAcabado(Movimentar movimentar) {
+        String codigoMaterialStr = JOptionPane.showInputDialog("Informe o código do material acabado:");
+        if (codigoMaterialStr == null || codigoMaterialStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código do material não pode ser vazio.");
+            return;
+        }
+
+        int codigoMaterial;
+        try {
+            codigoMaterial = Integer.parseInt(codigoMaterialStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código do material deve ser um número inteiro.");
+            return;
+        }
+
+        String tipoOperacao = JOptionPane.showInputDialog("Informe o tipo (E - Entrada, S - Saída, T - Transferência):").toUpperCase();
+        if (tipoOperacao == null || (!tipoOperacao.equals("E") && !tipoOperacao.equals("S") && !tipoOperacao.equals("T"))) {
+            JOptionPane.showMessageDialog(null, "Tipo de operação deve ser E, S ou T.");
+            return;
+        }
+
+        String depositoStr = JOptionPane.showInputDialog("Informe o depósito:");
+        if (depositoStr == null || depositoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Depósito não pode ser vazio.");
+            return;
+        }
+
+        int deposito;
+        try {
+            deposito = Integer.parseInt(depositoStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Depósito deve ser um número inteiro.");
+            return;
+        }
+
+        String quantidadeStr = JOptionPane.showInputDialog("Informe a quantidade:");
+        if (quantidadeStr == null || quantidadeStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Quantidade não pode ser vazia.");
+            return;
+        }
+
+        double quantidade;
+        try {
+            quantidade = Double.parseDouble(quantidadeStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Quantidade deve ser um número.");
+            return;
+        }
+
+        // Chama o método para movimentar o material acabado
+        movimentar.movimentarMaterialAcabado(codigoMaterial, tipoOperacao, deposito, quantidade);
+        JOptionPane.showMessageDialog(null, "Movimentação realizada com sucesso!");
+    }
+
+    private static void buscarInsumo() {
+        String codigoInsumoStr = JOptionPane.showInputDialog("Informe o código do insumo:");
+        if (codigoInsumoStr == null || codigoInsumoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código não pode ser vazio.");
+            return;
+        }
+
+        int codigoInsumo;
+        try {
+            codigoInsumo = Integer.parseInt(codigoInsumoStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código deve ser um número inteiro.");
+            return;
+        }
+
+        Insumo insumoBuscado = Insumo.buscarInsumo(codigoInsumo);
+        if (insumoBuscado != null) {
+            JOptionPane.showMessageDialog(null, "Insumo encontrado: " + insumoBuscado.getDescricaoInsumo() +
+                    "\nQuantidade: " + Insumo.quantidadesInsumos.get(codigoInsumo));
+        }
+    }
+
+    private static void buscarDeposito() {
+        String codigoDepositoStr = JOptionPane.showInputDialog("Informe o código do depósito:");
+        if (codigoDepositoStr == null || codigoDepositoStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código não pode ser vazio.");
+            return;
+        }
+
+        int codigoDeposito;
+        try {
+            codigoDeposito = Integer.parseInt(codigoDepositoStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código deve ser um número inteiro.");
+            return;
+        }
+
+        Deposito depositoBuscado = Deposito.buscarDeposito(codigoDeposito);
+        if (depositoBuscado != null) {
+            JOptionPane.showMessageDialog(null, "Depósito encontrado: " + depositoBuscado.getDeposito() +
+                    " " + depositoBuscado.getDescricaoDeposito() +
+                    "\nQuantidade: " + Deposito.quantidadesMateriaPrima.get(codigoDeposito));
+        }
+    }
+
+    private static void buscarEtapa() {
+        String codigoEtapaStr = JOptionPane.showInputDialog("Informe o código da etapa:");
+        if (codigoEtapaStr == null || codigoEtapaStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código não pode ser vazio.");
+            return;
+        }
+
+        int codigoEtapa;
+        try {
+            codigoEtapa = Integer.parseInt(codigoEtapaStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código deve ser um número inteiro.");
+            return;
+        }
+
+        EtapasProdutivas etapaBuscada = EtapasProdutivas.buscarEtapa(codigoEtapa);
+        if (etapaBuscada != null) {
+            JOptionPane.showMessageDialog(null, "Etapa encontrada: " + etapaBuscada.getNumeroEtapa() +
+                    "\nQuantidade: " + EtapasProdutivas.quantidadesEtapas.get(codigoEtapa));
+        } else {
+            JOptionPane.showMessageDialog(null, "Etapa com código " + codigoEtapa + " não encontrada.");
+        }
+    }
+
+    private static void buscarMaterialElaborado() {
+        String codigoMaterialStr = JOptionPane.showInputDialog("Informe o código do material elaborado:");
+        if (codigoMaterialStr == null || codigoMaterialStr.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Código não pode ser vazio.");
+            return;
+        }
+
+        int codigoMaterial;
+        try {
+            codigoMaterial = Integer.parseInt(codigoMaterialStr);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Código deve ser um número inteiro.");
+            return;
+        }
+
+        Materiais materialBuscado = Materiais.buscarMaterial(codigoMaterial);
+        if (materialBuscado != null) {
+            JOptionPane.showMessageDialog(null, "Material encontrado: " + materialBuscado.getDescricaoMaterial() +
+                    "\nCódigo: " + materialBuscado.getCodigoMaterial() +
+                    "\nQuantidade: " + Materiais.quantidadesMateriaisElaborado.get(codigoMaterial));
+        }
+    }
+
+    private static void listarEtapas() {
+        String etapasListadas = EtapasProdutivas.listarEtapas();
+        JOptionPane.showMessageDialog(null, etapasListadas);
+    }
+
+    private static void listarMateriaisElborado() {
+        String materiaisListados = Materiais.listarMateriaisElaborado();
+        JOptionPane.showMessageDialog(null, materiaisListados);
+
+    }
+
+    private static void listarMateriaisAcabado() {
+        String materiaisListados = Materiais.listarMateriaisAcabados();
+        JOptionPane.showMessageDialog(null, materiaisListados);
+
+    }
+
+    private static void listarInsumos() {
+        String insumosListados = Insumo.listarInsumos();
+        JOptionPane.showMessageDialog(null, insumosListados);
+    }
+
+    private static void listarDepositosAcabado() {
+        String depositosListados = Deposito.listarDepositosAcabado();
+        JOptionPane.showMessageDialog(null, depositosListados);
+    }
+
+    private static void listarDepositosElaborado() {
+        String depositosListados = Deposito.listarDepositosElaborado();
+        JOptionPane.showMessageDialog(null, depositosListados);
+    }
+
+    private static void listarDepositosMateriaPrima() {
+        String depositosListados = Deposito.listarDepositosMateriaPria();
+        JOptionPane.showMessageDialog(null, depositosListados);
+    }
+
+    private static void excluirInsumo() {
+        int codigoInsumo = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do insumo a ser excluído:"));
+        Insumo.excluirInsumo(codigoInsumo);
+    }
+
+    private static void excluirDeposito() {
+        int codigoDeposito = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do depósito a ser excluído:"));
+        Deposito.excluirDeposito(codigoDeposito);
+    }
+
+    private static void excluirMaterialElaborado() {
+        int codigoMaterial = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do Material a ser excluído:"));
+       Materiais.excluirMaterialElaborado(codigoMaterial);
+    }
+
+    private static void excluirMaterialAcabado() {
+        int codigoMaterial = Integer.parseInt(JOptionPane.showInputDialog("Informe o código do Material a ser excluído:"));
+        Materiais.excluirMaterialAcabado(codigoMaterial);
+    }
+
+    private static void excluirEtapa() {
+        int codigoEtapa =Integer.parseInt(JOptionPane.showInputDialog("Informe o código da etapa a ser excluída:"));
+        EtapasProdutivas.excluirEtapa(codigoEtapa);
+    }
+
+    private static void verHistoricoInsumos(Movimentar movimentar) {
+        StringBuilder historico = new StringBuilder();
+        historico.append("Histórico de Insumos:\n");
+        for (HistoricoMovimentacao.RegistroMovimentacao reg : movimentar.registrar.getHistoricoInsumos()) {
+            historico.append("Código: ").append(reg.getCodigo())
+                    .append(", Quantidade: ").append(reg.getQuantidade())
+                    .append(", Tipo: ").append(reg.getTipo())
+                    .append(", Data/Hora: ").append(reg.getDataHoraFormatada()).append("\n");
+        }
+        JOptionPane.showMessageDialog(null, historico.toString());
+    }
+
+    private static void verHistoricoDepositos(Movimentar movimentar) {
+        StringBuilder historico = new StringBuilder();
+        historico.append("Histórico de Depósitos:\n");
+        for (HistoricoMovimentacao.RegistroMovimentacao reg : movimentar.registrar.getHistoricoDepositos()) {
+            historico.append("Código: ").append(reg.getCodigo())
+                    .append(", Quantidade: ").append(reg.getQuantidade())
+                    .append(", Tipo: ").append(reg.getTipo())
+                    .append(", Data/Hora: ").append(reg.getDataHoraFormatada()).append("\n");
+        }
+        JOptionPane.showMessageDialog(null, historico.toString());
+    }
+
+    private static void verHistoricoMaterialElaborado(Movimentar movimentar) {
+        StringBuilder historico = new StringBuilder();
+        historico.append("Histórico de Material Elaborado:\n");
+        for (HistoricoMovimentacao.RegistroMovimentacao reg : movimentar.registrar.getHistoricoMaterialElaborado()) {
+            historico.append("Código: ").append(reg.getCodigo())
+                    .append(", Quantidade: ").append(reg.getQuantidade())
+                    .append(", Tipo: ").append(reg.getTipo())
+                    .append(", Data/Hora: ").append(reg.getDataHoraFormatada()).append("\n");
+        }
+        JOptionPane.showMessageDialog(null, historico.toString());
+    }
+
+    private static void verHistoricoMaterialAcabado(Movimentar movimentar) {
+        StringBuilder historico = new StringBuilder();
+        historico.append("Histórico de Material acabado:\n");
+        for (HistoricoMovimentacao.RegistroMovimentacao reg : movimentar.registrar.getHistoricoMaterialAcabado()) {
+            historico.append("Código: ").append(reg.getCodigo())
+                    .append(", Quantidade: ").append(reg.getQuantidade())
+                    .append(", Tipo: ").append(reg.getTipo())
+                    .append(", Data/Hora: ").append(reg.getDataHoraFormatada()).append("\n");
+        }
+        JOptionPane.showMessageDialog(null, historico.toString());
+    }
+
+    private static void verHistoricoEtapasProdutivas(Movimentar movimentar) {
+        StringBuilder historico = new StringBuilder();
+        historico.append("Histórico de Etapas Produtivas:\n");
+        for (HistoricoMovimentacao.RegistroMovimentacao reg : movimentar.registrar.getHistoricoEtapasProdutivas()) {
+            historico.append("Código: ").append(reg.getCodigo())
+                    .append(", Quantidade: ").append(reg.getQuantidade())
+                    .append(", Tipo: ").append(reg.getTipo())
+                    .append(", Data/Hora: ").append(reg.getDataHoraFormatada()).append("\n");
+        }
+        JOptionPane.showMessageDialog(null, historico.toString());
+    }
+
+    private static void verTotalMateriaPrima() {
+        double total = Insumo.quantidadeTotalInsumos();
+        JOptionPane.showMessageDialog(null, "Total de matéria prima no estoque: " + total);
+    }
+
+    private static void verTotalMaterialElaborado() {
+        double total = Materiais.totalEmEstoqueElaborado();
+        JOptionPane.showMessageDialog(null, "Total de material elaborado no estoque: " + total);
+    }
+
+    private static void verTotalMaterialAcabado() {
+        double total = Materiais.totalEmEstoqueAcabado();
+        JOptionPane.showMessageDialog(null, "Total de material Acabado no estoque: " + total);
+    }
+}
+
+
