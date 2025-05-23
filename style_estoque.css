@@ -1,0 +1,68 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    font-family: serif;
+    background-color: rgb(232, 231, 231);
+}
+
+img{
+    width: 60px;
+    height: 60px;
+}
+
+
+header{
+    background-color: rgb(86, 85, 85);
+    padding: 10px;
+}
+.container{
+    display: flex;
+    justify-content: space-between;
+}
+
+h2{
+    text-align: center;
+    margin-top: 35px;
+}
+
+ table {
+      width: 80%;
+      margin: auto;
+      border-collapse: collapse;
+      margin-top: 35px ;
+    }
+
+    th, td {
+      border: 1px solid #898989;
+      padding: 10px;
+      text-align: left;
+    }
+
+    input[type="text"], input[type="number"], input[type="email"] {
+      width: 95%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .caixa{
+        display: flex;
+        justify-content: center;
+    }
+
+     .submit-btn {
+     width: fit-content;
+     padding: 15px 35px;
+     margin-top: 35px;
+     border-radius: 5px;
+     font-weight: 500;
+     font-size: 25px;
+     transition: 0.5s ease-in;
+    }
+
+    .submit-btn:hover {
+      background-color: #45a049;
+    }

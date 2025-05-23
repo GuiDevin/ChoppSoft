@@ -39,6 +39,7 @@ header{
     color: black;
     transition: 0.6s ease-in-out;
     transform: translateY(0);
+    
 }
 .link:hover{
     background-color: rgb(202, 141, 29);
