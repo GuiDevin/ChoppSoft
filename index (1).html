@@ -1,0 +1,132 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChoppSoft</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <nav class="bg-blue-600 text-white p-4">
+        <ul class="flex space-x-4 justify-center">
+            <li><button class="tab-button px-4 py-2 rounded hover:bg-blue-700" onclick="openTab('finance')">Finanças</button></li>
+            <li><button class="tab-button px-4 py-2 rounded hover:bg-blue-700" onclick="openTab('products')">Produtos</button></li>
+            <li><button class="tab-button px-4 py-2 rounded hover:bg-blue-700" onclick="openTab('stock')">Estoque</button></li>
+        </ul>
+    </nav>
+
+    <div class="container mx-auto p-4">
+        <!-- Finanças Tab -->
+        <div id="finance" class="tab-content">
+            <h2 class="text-2xl font-bold mb-4">Finanças</h2>
+            <p>Placeholder para a tela de Finanças.</p>
+        </div>
+
+        <!-- Produtos Tab -->
+        <div id="products" class="tab-content">
+            <h2 class="text-2xl font-bold mb-4">Produtos</h2>
+            <p>Placeholder para a tela de Produtos.</p>
+        </div>
+
+        <!-- Estoque Tab -->
+        <div id="stock" class="tab-content active">
+            <h2 class="text-2xl font-bold mb-4">Estoque</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Cadastrar Insumo -->
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="text-xl font-semibold mb-2">Cadastrar Insumo</h3>
+                    <form id="registerInsumoForm">
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Código</label>
+                            <input type="number" id="insumoCode" class="w-full p-2 border rounded" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Descrição</label>
+                            <input type="text" id="insumoDescription" class="w-full p-2 border rounded" required>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Cadastrar</button>
+                    </form>
+                </div>
+
+                <!-- Movimentar Insumo -->
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="text-xl font-semibold mb-2">Movimentar Insumo</h3>
+                    <form id="moveInsumoForm">
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Código do Insumo</label>
+                            <input type="number" id="moveInsumoCode" class="w-full p-2 border rounded" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Tipo (E/S/T)</label>
+                            <select id="moveType" class="w-full p-2 border rounded" required>
+                                <option value="E">Entrada</option>
+                                <option value="S">Saída</option>
+                                <option value="T">Transferência</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Depósito</label>
+                            <input type="number" id="moveDeposito" class="w-full p-2 border rounded" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700">Quantidade</label>
+                            <input type="number" step="0.01" id="moveQuantity" class="w-full p-2 border rounded" required>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Movimentar</button>
+                    </form>
+                </div>
+
+                <!-- Listar Insumos -->
+                <div class="bg-white p-4 rounded shadow">
+                    <h3 class="text-xl font-semibold mb-2">Listar Insumos</h3>
+                    <button id="listInsumosBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Gerar Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function open
