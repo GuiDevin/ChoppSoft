@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexão Java e HTML</title>
+</head>
+<body>
+    <h1>Bem-vindo ao Index2</h1>
+    <button onclick="loadData()">Carregar Dados do Java</button>
+    <div id="data"></div>
+
+    <script>
+        function loadData() {
+            fetch('/data')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('data').innerHTML = data;
+                });
+        }
+    </script>
+</body>
+</html>
